@@ -282,14 +282,6 @@
             gap: 9px;
         }
 
-        .dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: #35d07f;
-            flex: none;
-        }
-
         .nav-links {
             display: flex;
             gap: 30px;
@@ -420,15 +412,15 @@
         }
 
         .kicker {
+            display: inline-block;
             font-family: var(--mono);
             font-size: 11.5px;
             letter-spacing: .26em;
             text-transform: uppercase;
             color: var(--muted);
-            display: flex;
-            align-items: center;
-            gap: 11px;
             margin-bottom: 30px;
+            padding-bottom: 7px;
+            border-bottom: 1px solid #35d07f;
         }
 
         .hero h1 {
@@ -547,22 +539,34 @@
 
         .avatar .ring {
             position: absolute;
-            inset: -14px;
+            inset: -22px;
             border: 1px solid var(--line);
             border-radius: 50%;
-            animation: rot 30s linear infinite;
         }
 
-        .avatar .ring::before {
-            content: "";
+        /* one logo travelling around the ring; the inner img counter-rotates
+           at the same speed so it always stays upright */
+        .orbit {
             position: absolute;
-            top: -3px;
+            inset: -22px;
+            pointer-events: none;
+            animation: rot 18s linear infinite;
+        }
+
+        .orbit img {
+            position: absolute;
+            top: -23px;
             left: 50%;
-            width: 5px;
-            height: 5px;
+            margin-left: -23px;
+            width: 46px;
+            height: 46px;
+            padding: 9px;
             border-radius: 50%;
-            background: var(--accent);
-            transform: translateX(-50%);
+            background: var(--bg);
+            border: 1px solid var(--line);
+            object-fit: contain;
+            animation: rot 18s linear infinite reverse;
+            transition: opacity .3s linear;
         }
 
         @keyframes rot {
@@ -1105,10 +1109,6 @@
                 justify-items: center;
             }
 
-            .kicker {
-                justify-content: center;
-            }
-
             .hero p.lead {
                 margin-inline: auto;
             }
@@ -1226,7 +1226,7 @@
 
     <!-- ================= NAV ================= -->
     <header class="nav" id="nav">
-        <a href="#top" class="brand"><span class="dot"></span> Manpreet Singh</a>
+        <a href="#top" class="brand">Manpreet Singh</a>
         <nav>
             <ul class="nav-links" id="nav-links">
                 <li><a href="#about">About</a></li>
@@ -1251,7 +1251,7 @@
         <section class="hero wrap" id="top">
             <div class="hero-in">
                 <div>
-                    <div class="kicker" data-reveal><span class="dot"></span> Available for work</div>
+                    <div class="kicker" data-reveal>Available for work</div>
 
                     <h1>
                         <span class="mask"><span>Software</span></span>
@@ -1285,6 +1285,7 @@
 
                 <div class="avatar" data-reveal style="--d:200ms">
                     <div class="ring"></div>
+                    <div class="orbit" aria-hidden="true"><img id="orbit-logo" src="netsuite.png" alt="" /></div>
                     <figure><img src="myimage.png" alt="Manpreet Singh" width="280" height="280" /></figure>
                 </div>
             </div>
@@ -1602,6 +1603,27 @@
                     else if (back && c === 0) { back = false; i = (i + 1) % lines.length; wait = 280; }
                     setTimeout(step, wait);
                 })();
+            })();
+
+            /* -------- orbiting logo: swaps every 2s -------- */
+            (function () {
+                const img = $("#orbit-logo");
+                if (!img) return;
+                const logos = [
+                    "netsuite.png", "boomi.png", "celigo.png", "salesforce.png", "aws.png",
+                    "python.png", "shopify.png", "powerbi.png", "docker.png", "hubspot.png",
+                    "postgresql.png", "make.png", "zoho.png", "mysql.png", "github.png"
+                ];
+                logos.forEach(src => { const p = new Image(); p.src = src; }); // warm the cache
+                let i = 0;
+                setInterval(() => {
+                    img.style.opacity = "0";
+                    setTimeout(() => {
+                        i = (i + 1) % logos.length;
+                        img.src = logos[i];
+                        img.style.opacity = "1";
+                    }, 300);
+                }, 2000);
             })();
 
             /* -------- reveal on scroll -------- */
