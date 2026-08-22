@@ -629,39 +629,6 @@
         }
 
         /* ==========================================================
-       MARQUEE
-       ========================================================== */
-        .marquee {
-            border-block: 1px solid var(--line);
-            padding-block: 22px;
-            overflow: hidden;
-        }
-
-        .mq-track {
-            display: flex;
-            width: max-content;
-            will-change: transform;
-        }
-
-        .mq-track span {
-            display: inline-flex;
-            align-items: center;
-            gap: 22px;
-            padding-right: 22px;
-            white-space: nowrap;
-            font-size: clamp(17px, 2.4vw, 26px);
-            font-weight: 400;
-            letter-spacing: -.02em;
-            color: var(--muted);
-        }
-
-        .mq-track span em {
-            font-style: normal;
-            color: var(--accent);
-            font-size: .5em;
-        }
-
-        /* ==========================================================
        SECTION HEADS
        ========================================================== */
         .label {
@@ -861,18 +828,14 @@
             gap: 24px;
             padding: clamp(22px, 2.4vw, 30px) 0;
             border-bottom: 1px solid var(--line);
-            transition: padding-left .5s var(--ease);
         }
 
-        .row:hover {
-            padding-left: 14px;
-        }
-
+        /* hover stays put — colour only, no movement */
         .row .no {
             font-family: var(--mono);
             font-size: 11.5px;
             color: var(--faint);
-            transition: color .4s;
+            transition: color .35s;
         }
 
         .row:hover .no {
@@ -888,68 +851,22 @@
         .row p {
             font-size: 14.5px;
             color: var(--muted);
+            transition: color .35s;
+        }
+
+        .row:hover p {
+            color: #b9b9c2;
         }
 
         .row .go {
             width: 24px;
             height: 24px;
-            opacity: .25;
-            transition: opacity .4s, transform .5s var(--ease);
+            opacity: .22;
+            transition: opacity .35s;
         }
 
         .row:hover .go {
-            opacity: 1;
-            transform: translate(3px, -3px);
-        }
-
-        /* ==========================================================
-       PROCESS
-       ========================================================== */
-        .steps {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: clamp(20px, 3vw, 40px);
-        }
-
-        .step {
-            padding-top: 22px;
-            border-top: 1px solid var(--line);
-            position: relative;
-        }
-
-        .step::before {
-            content: "";
-            position: absolute;
-            top: -1px;
-            left: 0;
-            width: 0;
-            height: 1px;
-            background: var(--accent);
-            transition: width 1s var(--ease);
-            transition-delay: var(--d, 0ms);
-        }
-
-        .step.in::before {
-            width: 100%;
-        }
-
-        .step .n {
-            font-family: var(--mono);
-            font-size: 11px;
-            letter-spacing: .2em;
-            color: var(--faint);
-        }
-
-        .step h3 {
-            margin: 14px 0 12px;
-            font-size: clamp(17px, 1.8vw, 21px);
-            font-weight: 500;
-            letter-spacing: -.025em;
-        }
-
-        .step p {
-            font-size: 14.5px;
-            color: var(--muted);
+            opacity: .8;
         }
 
         /* ==========================================================
@@ -1131,8 +1048,8 @@
 
             .avatar {
                 order: -1;
-                justify-self: start;
-                width: 128px;
+                justify-self: center;
+                width: 150px;
             }
 
             .about {
@@ -1141,10 +1058,6 @@
 
             .statement {
                 max-width: none;
-            }
-
-            .steps {
-                grid-template-columns: repeat(2, 1fr);
             }
 
             .cards {
@@ -1167,6 +1080,7 @@
             }
         }
 
+        /* ---------- phones: centre everything that reads better centred ---------- */
         @media (max-width: 760px) {
             .nav-links {
                 display: none;
@@ -1180,8 +1094,98 @@
                 display: none;
             }
 
-            .steps {
-                grid-template-columns: 1fr;
+            .hero {
+                padding-top: 112px;
+                padding-bottom: 70px;
+                text-align: center;
+            }
+
+            .hero-in {
+                gap: 34px;
+                justify-items: center;
+            }
+
+            .kicker {
+                justify-content: center;
+            }
+
+            .hero p.lead {
+                margin-inline: auto;
+            }
+
+            .actions {
+                justify-content: center;
+                gap: 26px;
+            }
+
+            .avatar {
+                width: 132px;
+            }
+
+            /* section heads stack and centre */
+            .head {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                gap: 18px;
+            }
+
+            .head p {
+                max-width: 34ch;
+            }
+
+            .label {
+                text-align: center;
+            }
+
+            .group>h3 {
+                text-align: center;
+            }
+
+            /* stats centred as a 2-up grid */
+            .figures {
+                text-align: center;
+                gap: 34px 18px;
+            }
+
+            /* service rows: number + title on one line, copy underneath */
+            .row {
+                grid-template-columns: 38px 1fr 18px;
+                gap: 14px;
+                padding-block: 22px;
+            }
+
+            .row h3 {
+                font-size: 19px;
+            }
+
+            .row p {
+                font-size: 14px;
+            }
+
+            .card {
+                text-align: left;
+            }
+
+            .contact .sub {
+                max-width: 34ch;
+            }
+
+            footer {
+                justify-content: center;
+                text-align: center;
+                gap: 8px;
+            }
+
+            footer span {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 420px) {
+            .mailto {
+                font-size: 22px;
+                letter-spacing: -.02em;
             }
         }
 
@@ -1228,7 +1232,6 @@
                 <li><a href="#about">About</a></li>
                 <li><a href="#stack">Stack</a></li>
                 <li><a href="#services">Services</a></li>
-                <li><a href="#process">Process</a></li>
                 <li><a href="#contact">Contact</a></li>
             </ul>
         </nav>
@@ -1239,7 +1242,6 @@
         <a href="#about">About</a>
         <a href="#stack">Stack</a>
         <a href="#services">Services</a>
-        <a href="#process">Process</a>
         <a href="#contact">Contact</a>
     </nav>
 
@@ -1289,16 +1291,6 @@
 
             <div class="cue"><i></i> Scroll</div>
         </section>
-
-        <!-- ================= MARQUEE ================= -->
-        <div class="marquee" aria-hidden="true">
-            <div class="mq-track" id="mq-track">
-                <span>NetSuite <em>◆</em> Boomi <em>◆</em> Celigo <em>◆</em> Salesforce <em>◆</em> AWS <em>◆</em> Python
-                    <em>◆</em> Shopify <em>◆</em> Power BI <em>◆</em> HubSpot <em>◆</em> Docker <em>◆</em></span>
-                <span>NetSuite <em>◆</em> Boomi <em>◆</em> Celigo <em>◆</em> Salesforce <em>◆</em> AWS <em>◆</em> Python
-                    <em>◆</em> Shopify <em>◆</em> Power BI <em>◆</em> HubSpot <em>◆</em> Docker <em>◆</em></span>
-            </div>
-        </div>
 
         <!-- ================= ABOUT ================= -->
         <section class="wrap pad-y" id="about">
@@ -1490,42 +1482,9 @@
             </div>
         </section>
 
-        <!-- ================= PROCESS ================= -->
-        <section class="wrap pad-y" id="process">
-            <div class="label" data-reveal>04 / Process</div>
-            <div class="head">
-                <h2 class="title mask"><span>How the <span class="soft">work happens</span></span></h2>
-                <p data-reveal style="--d:150ms">A predictable rhythm, so you always know what's being built and why.
-                </p>
-            </div>
-
-            <div class="steps">
-                <div class="step" data-reveal>
-                    <span class="n">STEP 01</span>
-                    <h3>Discover &amp; map</h3>
-                    <p>We walk the current process end to end — systems, owners, edge cases, and what breaks today.</p>
-                </div>
-                <div class="step" data-reveal style="--d:110ms">
-                    <span class="n">STEP 02</span>
-                    <h3>Design the contract</h3>
-                    <p>Data models, field mappings and error strategy get agreed before a single line of code.</p>
-                </div>
-                <div class="step" data-reveal style="--d:220ms">
-                    <span class="n">STEP 03</span>
-                    <h3>Build &amp; validate</h3>
-                    <p>Incremental delivery in a sandbox with real data samples — no single big reveal at the end.</p>
-                </div>
-                <div class="step" data-reveal style="--d:330ms">
-                    <span class="n">STEP 04</span>
-                    <h3>Ship &amp; watch</h3>
-                    <p>Go-live with monitoring and runbooks, plus a hypercare window so nothing fails quietly.</p>
-                </div>
-            </div>
-        </section>
-
         <!-- ================= TESTIMONIALS ================= -->
         <section class="wrap pad-y" id="voices">
-            <div class="label" data-reveal>05 / Voices</div>
+            <div class="label" data-reveal>04 / Voices</div>
             <div class="head">
                 <h2 class="title mask"><span>Kind <span class="soft">words</span></span></h2>
             </div>
@@ -1557,7 +1516,7 @@
 
         <!-- ================= CONTACT ================= -->
         <section class="contact wrap pad-y" id="contact">
-            <div class="label" data-reveal>06 / Contact</div>
+            <div class="label" data-reveal>05 / Contact</div>
 
             <a class="mailto" id="mailto" href="mailto:manpreets90000@gmail.com">manpreets90000@gmail.com</a>
 
@@ -1712,29 +1671,6 @@
             }, { passive: true });
             addEventListener("resize", onScroll, { passive: true });
             onScroll();
-
-            /* -------- marquee -------- */
-            (function () {
-                const track = $("#mq-track");
-                if (reduced) return;
-                let x = 0, half = 0, vel = 0, last = scrollY;
-                const measure = () => { half = track.scrollWidth / 2; };
-                measure();
-                addEventListener("resize", measure);
-                addEventListener("load", measure);
-                if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
-                addEventListener("scroll", () => {
-                    vel = Math.min(4, Math.abs(scrollY - last) * .1);
-                    last = scrollY;
-                }, { passive: true });
-                (function run() {
-                    x -= .4 + vel;
-                    vel *= .94;
-                    if (half && -x >= half) x += half;
-                    track.style.transform = "translate3d(" + x + "px,0,0)";
-                    requestAnimationFrame(run);
-                })();
-            })();
 
             /* -------- mobile menu -------- */
             (function () {
