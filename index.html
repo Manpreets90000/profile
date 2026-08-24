@@ -24,6 +24,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
     <link
         href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
         rel="stylesheet" />
@@ -40,6 +41,7 @@
             --fg: #ededf0;
             --muted: #8b8b95;
             --faint: rgba(237, 237, 240, .32);
+            --dim: rgba(237, 237, 240, .17);
             --accent: #ff2f52;
 
             --sans: "Space Grotesk", system-ui, -apple-system, sans-serif;
@@ -143,6 +145,60 @@
         }
 
         /* ==========================================================
+       ATMOSPHERE  (aurora + grain — anime.js drifts the blobs)
+       ========================================================== */
+        .aurora {
+            position: fixed;
+            inset: 0;
+            z-index: -2;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .aurora b {
+            position: absolute;
+            display: block;
+            border-radius: 50%;
+            filter: blur(80px);
+            will-change: transform;
+        }
+
+        .aurora .a1 {
+            width: 48vw;
+            height: 48vw;
+            left: -12vw;
+            top: -14vw;
+            background: radial-gradient(circle, rgba(255, 47, 82, .26), transparent 68%);
+        }
+
+        .aurora .a2 {
+            width: 42vw;
+            height: 42vw;
+            right: -10vw;
+            top: 26vh;
+            background: radial-gradient(circle, rgba(53, 208, 127, .16), transparent 68%);
+        }
+
+        .aurora .a3 {
+            width: 56vw;
+            height: 56vw;
+            left: 18vw;
+            bottom: -26vw;
+            background: radial-gradient(circle, rgba(96, 116, 255, .18), transparent 70%);
+        }
+
+        .grain {
+            position: fixed;
+            inset: -50%;
+            z-index: -1;
+            pointer-events: none;
+            opacity: .05;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            background-size: 140px 140px;
+            will-change: transform;
+        }
+
+        /* ==========================================================
        MOTION PRIMITIVES
        ========================================================== */
         [data-reveal] {
@@ -157,9 +213,16 @@
             transform: none;
         }
 
+        /* children of a stagger group start hidden, anime.js brings them in */
+        [data-group]>* {
+            opacity: 0;
+        }
+
         .mask {
             display: block;
             overflow: hidden;
+            padding-bottom: .12em;
+            margin-bottom: -.12em;
         }
 
         .mask>span {
@@ -173,6 +236,40 @@
             transform: none;
         }
 
+        /* split units created by anime's text pass */
+        .wd {
+            display: inline-block;
+            white-space: nowrap;
+        }
+
+        .ch {
+            display: inline-block;
+            will-change: transform, opacity;
+        }
+
+        /* --- when anime.js is driving, hand it the wheel: kill CSS transitions --- */
+        html.js-anime [data-reveal],
+        html.js-anime .mask>span,
+        html.js-anime .statement .w {
+            transition: none;
+        }
+
+        html.js-anime .mask>span {
+            transform: none;
+        }
+
+        html.js-anime .card:hover,
+        html.js-anime .logo:hover {
+            transform: none;
+        }
+
+        /* --- no anime.js (blocked CDN / no JS): everything simply shows --- */
+        html.no-anime [data-reveal],
+        html.no-anime [data-group]>* {
+            opacity: 1;
+            transform: none;
+        }
+
         /* ==========================================================
        PRELOADER
        ========================================================== */
@@ -183,12 +280,13 @@
             background: var(--bg);
             display: grid;
             place-items: center;
-            transition: opacity .7s var(--ease), visibility .7s;
+            will-change: transform;
         }
 
         #loader.done {
             opacity: 0;
             visibility: hidden;
+            transition: opacity .7s var(--ease), visibility .7s;
         }
 
         .load-name {
@@ -196,8 +294,6 @@
             font-weight: 500;
             letter-spacing: -.03em;
             text-align: center;
-            opacity: 0;
-            animation: fadeUp .8s var(--ease) .1s forwards;
         }
 
         .load-num {
@@ -223,18 +319,6 @@
             background: var(--fg);
         }
 
-        @keyframes fadeUp {
-            from {
-                opacity: 0;
-                transform: translateY(14px)
-            }
-
-            to {
-                opacity: 1;
-                transform: none
-            }
-        }
-
         /* ==========================================================
        PROGRESS + NAV
        ========================================================== */
@@ -244,7 +328,7 @@
             left: 0;
             height: 1.5px;
             width: 100%;
-            background: var(--accent);
+            background: linear-gradient(90deg, var(--accent), #ff7a52);
             transform: scaleX(0);
             transform-origin: 0 50%;
             z-index: 950;
@@ -280,6 +364,14 @@
             display: flex;
             align-items: center;
             gap: 9px;
+        }
+
+        .brand .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--accent);
+            flex: none;
         }
 
         .nav-links {
@@ -393,6 +485,50 @@
         }
 
         /* ==========================================================
+       CUSTOM CURSOR  (anime.js lerps it)
+       ========================================================== */
+        .cur,
+        .cur-dot {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 990;
+            pointer-events: none;
+            border-radius: 50%;
+            mix-blend-mode: difference;
+            opacity: 0;
+            will-change: transform;
+            transition: opacity .35s var(--ease);
+        }
+
+        .cur.on,
+        .cur-dot.on {
+            opacity: 1;
+        }
+
+        .cur {
+            width: 34px;
+            height: 34px;
+            margin: -17px 0 0 -17px;
+            border: 1px solid rgba(255, 255, 255, .6);
+            /* `scale` is its own property, so anime can own `transform` freely */
+            scale: 1;
+            transition: opacity .35s var(--ease), scale .4s var(--ease);
+        }
+
+        .cur.big {
+            scale: 1.75;
+            opacity: .55;
+        }
+
+        .cur-dot {
+            width: 5px;
+            height: 5px;
+            margin: -2.5px 0 0 -2.5px;
+            background: #fff;
+        }
+
+        /* ==========================================================
        HERO
        ========================================================== */
         .hero {
@@ -412,7 +548,9 @@
         }
 
         .kicker {
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
             font-family: var(--mono);
             font-size: 11.5px;
             letter-spacing: .26em;
@@ -421,6 +559,14 @@
             margin-bottom: 30px;
             padding-bottom: 7px;
             border-bottom: 1px solid #35d07f;
+        }
+
+        .kicker .pulse {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #35d07f;
+            flex: none;
         }
 
         .hero h1 {
@@ -455,20 +601,6 @@
             height: 1.05em;
             background: var(--accent);
             vertical-align: -2px;
-            animation: blink 1.05s steps(1) infinite;
-        }
-
-        @keyframes blink {
-
-            0%,
-            50% {
-                opacity: 1
-            }
-
-            51%,
-            100% {
-                opacity: 0
-            }
         }
 
         .actions {
@@ -488,6 +620,7 @@
             font-size: 15.5px;
             font-weight: 500;
             padding-bottom: 5px;
+            will-change: transform;
         }
 
         .ln::after {
@@ -535,13 +668,20 @@
             width: clamp(180px, 24vw, 280px);
             aspect-ratio: 1;
             justify-self: end;
+            will-change: transform;
         }
 
-        .avatar .ring {
+        .avatar .ring-svg {
             position: absolute;
             inset: -22px;
-            border: 1px solid var(--line);
-            border-radius: 50%;
+            width: calc(100% + 44px);
+            height: calc(100% + 44px);
+            overflow: visible;
+        }
+
+        .avatar .ring-arc {
+            transform-box: fill-box;
+            transform-origin: 50% 50%;
         }
 
         /* one logo travelling around the ring; the inner img counter-rotates
@@ -550,7 +690,7 @@
             position: absolute;
             inset: -22px;
             pointer-events: none;
-            animation: rot 18s linear infinite;
+            will-change: transform;
         }
 
         .orbit img {
@@ -565,14 +705,7 @@
             background: var(--bg);
             border: 1px solid var(--line);
             object-fit: contain;
-            animation: rot 18s linear infinite reverse;
-            transition: opacity .3s linear;
-        }
-
-        @keyframes rot {
-            to {
-                transform: rotate(360deg)
-            }
+            will-change: transform;
         }
 
         .avatar figure {
@@ -615,23 +748,12 @@
             overflow: hidden;
         }
 
-        .cue i::after {
-            content: "";
+        .cue i b {
             position: absolute;
             inset: 0;
+            display: block;
             background: var(--accent);
             transform: translateX(-100%);
-            animation: sweep 2.4s var(--ease) infinite;
-        }
-
-        @keyframes sweep {
-            50% {
-                transform: translateX(0)
-            }
-
-            100% {
-                transform: translateX(100%)
-            }
         }
 
         /* ==========================================================
@@ -687,10 +809,11 @@
             line-height: 1.35;
             letter-spacing: -.028em;
             max-width: 20ch;
+            color: var(--fg);
         }
 
         .statement .w {
-            color: rgba(237, 237, 240, .17);
+            color: var(--dim);
             transition: color .3s linear;
         }
 
@@ -759,6 +882,44 @@
         }
 
         /* ==========================================================
+       MARQUEE
+       ========================================================== */
+        .marq {
+            border-block: 1px solid var(--line);
+            overflow: hidden;
+            padding: 20px 0;
+        }
+
+        .marq-track {
+            display: flex;
+            width: max-content;
+            will-change: transform;
+        }
+
+        .marq-track span {
+            display: inline-flex;
+            align-items: center;
+            gap: 30px;
+            padding-right: 30px;
+            font-family: var(--mono);
+            font-size: clamp(11.5px, 1.3vw, 14px);
+            letter-spacing: .24em;
+            text-transform: uppercase;
+            color: var(--faint);
+            white-space: nowrap;
+        }
+
+        .marq-track span::after {
+            content: "";
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: var(--accent);
+            opacity: .65;
+            flex: none;
+        }
+
+        /* ==========================================================
        STACK
        ========================================================== */
         .group+.group {
@@ -802,11 +963,7 @@
             width: 40px;
             height: 40px;
             object-fit: contain;
-            transition: transform .4s var(--ease);
-        }
-
-        .logo:hover img {
-            transform: scale(1.08);
+            will-change: transform;
         }
 
         .logo span {
@@ -827,12 +984,24 @@
         }
 
         .row {
+            position: relative;
             display: grid;
             grid-template-columns: 62px 1fr 1.1fr 24px;
             align-items: center;
             gap: 24px;
             padding: clamp(22px, 2.4vw, 30px) 0;
             border-bottom: 1px solid var(--line);
+        }
+
+        .row .fill {
+            position: absolute;
+            inset: 0 -18px;
+            z-index: -1;
+            border-radius: 14px;
+            background: linear-gradient(90deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .015) 55%, transparent);
+            opacity: 0;
+            transform-origin: 0 50%;
+            pointer-events: none;
         }
 
         /* hover stays put — colour only, no movement */
@@ -867,11 +1036,7 @@
             width: 24px;
             height: 24px;
             opacity: .22;
-            transition: opacity .35s;
-        }
-
-        .row:hover .go {
-            opacity: .8;
+            will-change: transform;
         }
 
         /* ==========================================================
@@ -881,22 +1046,34 @@
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 14px;
+            perspective: 1100px;
         }
 
         .card {
+            position: relative;
+            overflow: hidden;
             padding: clamp(26px, 3vw, 34px);
             border: 1px solid var(--line);
             border-radius: 16px;
             display: flex;
             flex-direction: column;
             gap: 24px;
-            transition: border-color .45s, background .45s, transform .5s var(--ease);
+            transform-style: preserve-3d;
+            will-change: transform;
+            transition: border-color .45s, background .45s;
         }
 
         .card:hover {
             border-color: var(--line-2);
             background: var(--bg-soft);
-            transform: translateY(-5px);
+        }
+
+        .card .shine {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            opacity: 0;
+            background: radial-gradient(220px circle at var(--mx, 50%) var(--my, 50%), rgba(255, 255, 255, .09), transparent 62%);
         }
 
         .card p {
@@ -956,6 +1133,11 @@
             position: relative;
             padding-bottom: 8px;
             word-break: break-word;
+        }
+
+        /* the address is one long "word" — let its split chars wrap on phones */
+        .mailto .wd {
+            white-space: normal;
         }
 
         .mailto::after {
@@ -1190,6 +1372,15 @@
             }
         }
 
+        @media (hover: none),
+        (pointer: coarse) {
+
+            .cur,
+            .cur-dot {
+                display: none;
+            }
+        }
+
         @media (prefers-reduced-motion: reduce) {
 
             *,
@@ -1202,20 +1393,47 @@
             }
 
             [data-reveal],
+            [data-group]>*,
             .mask>span {
                 opacity: 1 !important;
                 transform: none !important;
             }
+
+            .aurora,
+            .grain {
+                display: none;
+            }
         }
     </style>
+
+    <noscript>
+        <style>
+            #loader {
+                display: none;
+            }
+
+            [data-reveal],
+            [data-group]>*,
+            .mask>span {
+                opacity: 1 !important;
+                transform: none !important;
+            }
+        </style>
+    </noscript>
 </head>
 
 <body>
 
+    <!-- ================= ATMOSPHERE ================= -->
+    <div class="aurora" aria-hidden="true">
+        <b class="a1"></b><b class="a2"></b><b class="a3"></b>
+    </div>
+    <div class="grain" aria-hidden="true"></div>
+
     <!-- ================= PRELOADER ================= -->
     <div id="loader">
         <div>
-            <div class="load-name">Manpreet Singh</div>
+            <div class="load-name" id="load-name">Manpreet Singh</div>
             <div class="load-num"><span id="load-num">0</span>%</div>
             <div class="load-track">
                 <div class="load-fill" id="load-fill"></div>
@@ -1227,7 +1445,7 @@
 
     <!-- ================= NAV ================= -->
     <header class="nav" id="nav">
-        <a href="#top" class="brand">Manpreet Singh</a>
+        <a href="#top" class="brand"><span class="dot" id="brand-dot"></span>Manpreet Singh</a>
         <nav>
             <ul class="nav-links" id="nav-links">
                 <li><a href="#about">About</a></li>
@@ -1252,7 +1470,7 @@
         <section class="hero wrap" id="top">
             <div class="hero-in">
                 <div>
-                    <div class="kicker" data-reveal>Available for work</div>
+                    <div class="kicker" data-reveal><span class="pulse" id="pulse"></span>Available for work</div>
 
                     <h1>
                         <span class="mask"><span>Software</span></span>
@@ -1266,17 +1484,17 @@
                     </p>
 
                     <div class="roles" data-reveal style="--d:460ms">
-                        <span id="roles-out"></span><span class="caret"></span>
+                        <span id="roles-out"></span><span class="caret" id="caret"></span>
                     </div>
 
                     <div class="actions" data-reveal style="--d:540ms">
-                        <a class="ln" href="#contact">Get in touch
+                        <a class="ln" href="#contact" data-magnet>Get in touch
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                                 <path d="M7 17L17 7M17 7H8M17 7v9" stroke-linecap="round" stroke-linejoin="round" />
                             </svg>
                         </a>
                         <a class="ln quiet" href="https://www.linkedin.com/in/manpreets90000/" target="_blank"
-                            rel="noopener">LinkedIn
+                            rel="noopener" data-magnet>LinkedIn
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                                 <path d="M7 17L17 7M17 7H8M17 7v9" stroke-linecap="round" stroke-linejoin="round" />
                             </svg>
@@ -1284,14 +1502,20 @@
                     </div>
                 </div>
 
-                <div class="avatar" data-reveal style="--d:200ms">
-                    <div class="ring"></div>
-                    <div class="orbit" aria-hidden="true"><img id="orbit-logo" src="netsuite.png" alt="" /></div>
+                <div class="avatar" id="avatar">
+                    <svg class="ring-svg" viewBox="0 0 100 100" fill="none" aria-hidden="true">
+                        <circle class="ring-base" cx="50" cy="50" r="49" stroke="rgba(255,255,255,.10)"
+                            stroke-width=".5" />
+                        <circle id="ring-arc" class="ring-arc" cx="50" cy="50" r="49" stroke="var(--accent)"
+                            stroke-width=".9" stroke-linecap="round" stroke-dasharray="42 266" />
+                    </svg>
+                    <div class="orbit" id="orbit" aria-hidden="true"><img id="orbit-logo" src="netsuite.png" alt="" />
+                    </div>
                     <figure><img src="myimage.png" alt="Manpreet Singh" width="280" height="280" /></figure>
                 </div>
             </div>
 
-            <div class="cue"><i></i> Scroll</div>
+            <div class="cue"><i><b id="cue-sweep"></b></i> Scroll</div>
         </section>
 
         <!-- ================= ABOUT ================= -->
@@ -1323,25 +1547,33 @@
             </div>
 
             <!-- EDIT ME: put your real numbers here -->
-            <div class="figures">
-                <div class="figure" data-reveal>
+            <div class="figures" data-group=".figure">
+                <div class="figure">
                     <div class="n"><span data-count="5">0</span><i>+</i></div>
                     <div class="t">Years building</div>
                 </div>
-                <div class="figure" data-reveal style="--d:90ms">
+                <div class="figure">
                     <div class="n"><span data-count="40">0</span><i>+</i></div>
                     <div class="t">Projects delivered</div>
                 </div>
-                <div class="figure" data-reveal style="--d:180ms">
+                <div class="figure">
                     <div class="n"><span data-count="20">0</span><i>+</i></div>
                     <div class="t">Platforms integrated</div>
                 </div>
-                <div class="figure" data-reveal style="--d:270ms">
+                <div class="figure">
                     <div class="n"><span data-count="99">0</span><i>%</i></div>
                     <div class="t">Pipeline reliability</div>
                 </div>
             </div>
         </section>
+
+        <!-- ================= MARQUEE ================= -->
+        <div class="marq" aria-hidden="true">
+            <div class="marq-track" id="marq">
+                <span>System Integration</span><span>ETL &amp; ELT Pipelines</span><span>NetSuite</span><span>Boomi</span><span>Celigo</span><span>Salesforce</span><span>AWS</span><span>Python</span><span>PySpark</span><span>Power
+                    BI</span><span>Automation</span><span>REST APIs</span>
+            </div>
+        </div>
 
         <!-- ================= STACK ================= -->
         <section class="wrap pad-y" id="stack">
@@ -1352,9 +1584,9 @@
                 </p>
             </div>
 
-            <div class="group" data-reveal>
-                <h3>Integration &amp; iPaaS</h3>
-                <div class="logos">
+            <div class="group">
+                <h3 data-reveal>Integration &amp; iPaaS</h3>
+                <div class="logos" data-group=".logo">
                     <div class="logo"><img src="boomi.png" alt="Boomi" /><span>Boomi</span></div>
                     <div class="logo"><img src="celigo.png" alt="Celigo" /><span>Celigo</span></div>
                     <div class="logo"><img src="make.png" alt="Make" /><span>Make</span></div>
@@ -1362,9 +1594,9 @@
                 </div>
             </div>
 
-            <div class="group" data-reveal>
-                <h3>ERP, CRM &amp; Commerce</h3>
-                <div class="logos">
+            <div class="group">
+                <h3 data-reveal>ERP, CRM &amp; Commerce</h3>
+                <div class="logos" data-group=".logo">
                     <div class="logo"><img src="netsuite.png" alt="NetSuite" /><span>NetSuite</span></div>
                     <div class="logo"><img src="salesforce.png" alt="Salesforce" /><span>Salesforce</span></div>
                     <div class="logo"><img src="hubspot.png" alt="HubSpot" /><span>HubSpot</span></div>
@@ -1374,9 +1606,9 @@
                 </div>
             </div>
 
-            <div class="group" data-reveal>
-                <h3>Data &amp; Cloud</h3>
-                <div class="logos">
+            <div class="group">
+                <h3 data-reveal>Data &amp; Cloud</h3>
+                <div class="logos" data-group=".logo">
                     <div class="logo"><img src="python.png" alt="Python" /><span>Python</span></div>
                     <div class="logo"><img src="pyspark.png" alt="PySpark" /><span>PySpark</span></div>
                     <div class="logo"><img src="postgresql.png" alt="PostgreSQL" /><span>PostgreSQL</span></div>
@@ -1387,9 +1619,9 @@
                 </div>
             </div>
 
-            <div class="group" data-reveal>
-                <h3>Web</h3>
-                <div class="logos">
+            <div class="group">
+                <h3 data-reveal>Web</h3>
+                <div class="logos" data-group=".logo">
                     <div class="logo"><img src="html.png" alt="HTML5" /><span>HTML5</span></div>
                     <div class="logo"><img src="css.png" alt="CSS3" /><span>CSS3</span></div>
                     <div class="logo"><img src="github.png" alt="GitHub" /><span>GitHub</span></div>
@@ -1406,8 +1638,9 @@
                 </p>
             </div>
 
-            <div class="rows">
-                <div class="row" data-reveal>
+            <div class="rows" data-group=".row">
+                <div class="row">
+                    <i class="fill" aria-hidden="true"></i>
                     <span class="no">01</span>
                     <h3>Data &amp; System Integration</h3>
                     <p>Keep ERP, CRM, e-commerce and warehouse records in sync, with retries and clear failure handling.
@@ -1416,7 +1649,8 @@
                         <path d="M7 17L17 7M17 7H8M17 7v9" stroke-linecap="round" stroke-linejoin="round" />
                     </svg>
                 </div>
-                <div class="row" data-reveal style="--d:60ms">
+                <div class="row">
+                    <i class="fill" aria-hidden="true"></i>
                     <span class="no">02</span>
                     <h3>Custom Integration</h3>
                     <p>Bespoke middleware for when an off-the-shelf connector can't express your business rules.</p>
@@ -1424,7 +1658,8 @@
                         <path d="M7 17L17 7M17 7H8M17 7v9" stroke-linecap="round" stroke-linejoin="round" />
                     </svg>
                 </div>
-                <div class="row" data-reveal style="--d:120ms">
+                <div class="row">
+                    <i class="fill" aria-hidden="true"></i>
                     <span class="no">03</span>
                     <h3>API Development</h3>
                     <p>Versioned, documented REST APIs with auth, rate limiting and contracts teams can build on.</p>
@@ -1432,7 +1667,8 @@
                         <path d="M7 17L17 7M17 7H8M17 7v9" stroke-linecap="round" stroke-linejoin="round" />
                     </svg>
                 </div>
-                <div class="row" data-reveal style="--d:180ms">
+                <div class="row">
+                    <i class="fill" aria-hidden="true"></i>
                     <span class="no">04</span>
                     <h3>ETL / ELT Pipelines</h3>
                     <p>Scheduled and event-driven pipelines in Python and PySpark, landing clean, modelled data.</p>
@@ -1440,7 +1676,8 @@
                         <path d="M7 17L17 7M17 7H8M17 7v9" stroke-linecap="round" stroke-linejoin="round" />
                     </svg>
                 </div>
-                <div class="row" data-reveal style="--d:240ms">
+                <div class="row">
+                    <i class="fill" aria-hidden="true"></i>
                     <span class="no">05</span>
                     <h3>NetSuite &amp; ERP</h3>
                     <p>Customisation, scripting and integration — order flows, inventory, fulfilment, finance.</p>
@@ -1448,7 +1685,8 @@
                         <path d="M7 17L17 7M17 7H8M17 7v9" stroke-linecap="round" stroke-linejoin="round" />
                     </svg>
                 </div>
-                <div class="row" data-reveal style="--d:300ms">
+                <div class="row">
+                    <i class="fill" aria-hidden="true"></i>
                     <span class="no">06</span>
                     <h3>CRM Solutions</h3>
                     <p>Salesforce, HubSpot and Zoho — data hygiene, automation and two-way sync.</p>
@@ -1456,7 +1694,8 @@
                         <path d="M7 17L17 7M17 7H8M17 7v9" stroke-linecap="round" stroke-linejoin="round" />
                     </svg>
                 </div>
-                <div class="row" data-reveal style="--d:360ms">
+                <div class="row">
+                    <i class="fill" aria-hidden="true"></i>
                     <span class="no">07</span>
                     <h3>Cloud Management</h3>
                     <p>AWS infrastructure and containerised workloads that are cheap to run and easy to reason about.
@@ -1465,7 +1704,8 @@
                         <path d="M7 17L17 7M17 7H8M17 7v9" stroke-linecap="round" stroke-linejoin="round" />
                     </svg>
                 </div>
-                <div class="row" data-reveal style="--d:420ms">
+                <div class="row">
+                    <i class="fill" aria-hidden="true"></i>
                     <span class="no">08</span>
                     <h3>Web Development</h3>
                     <p>Fast, accessible front-ends and internal tools on top of the systems I integrate.</p>
@@ -1473,7 +1713,8 @@
                         <path d="M7 17L17 7M17 7H8M17 7v9" stroke-linecap="round" stroke-linejoin="round" />
                     </svg>
                 </div>
-                <div class="row" data-reveal style="--d:480ms">
+                <div class="row">
+                    <i class="fill" aria-hidden="true"></i>
                     <span class="no">09</span>
                     <h3>IT Consulting &amp; Support</h3>
                     <p>Architecture reviews, platform selection and ongoing technical support once you're live.</p>
@@ -1491,22 +1732,25 @@
                 <h2 class="title mask"><span>Kind <span class="soft">words</span></span></h2>
             </div>
 
-            <div class="cards">
-                <article class="card" data-reveal>
+            <div class="cards" data-group=".card">
+                <article class="card">
+                    <i class="shine" aria-hidden="true"></i>
                     <p>&ldquo;Working with Manpreet has been a game changer. The systems he built are incredibly
                         reliable and have helped our team streamline operations significantly.&rdquo;</p>
                     <div class="by"><img src="testimonial.png" alt="" />
                         <div><b>Sarah Miller</b><span>Data Scientist</span></div>
                     </div>
                 </article>
-                <article class="card" data-reveal style="--d:110ms">
+                <article class="card">
+                    <i class="shine" aria-hidden="true"></i>
                     <p>&ldquo;The solutions Manpreet provided for our cloud management and integrations have been
                         exceptional. His expertise in both technical and business aspects is invaluable.&rdquo;</p>
                     <div class="by"><img src="testimonial.png" alt="" />
                         <div><b>James Carter</b><span>CTO</span></div>
                     </div>
                 </article>
-                <article class="card" data-reveal style="--d:220ms">
+                <article class="card">
+                    <i class="shine" aria-hidden="true"></i>
                     <p>&ldquo;Manpreet's custom integration services made our workflows so much smoother. His attention
                         to detail and ability to understand our needs is unmatched.&rdquo;</p>
                     <div class="by"><img src="testimonial.png" alt="" />
@@ -1527,13 +1771,13 @@
             </p>
 
             <div class="elsewhere" data-reveal style="--d:250ms">
-                <a class="ln quiet" href="https://www.linkedin.com/in/manpreets90000/" target="_blank"
-                    rel="noopener">LinkedIn
+                <a class="ln quiet" href="https://www.linkedin.com/in/manpreets90000/" target="_blank" rel="noopener"
+                    data-magnet>LinkedIn
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                         <path d="M7 17L17 7M17 7H8M17 7v9" stroke-linecap="round" stroke-linejoin="round" />
                     </svg>
                 </a>
-                <a class="ln quiet" href="mailto:manpreets90000@gmail.com">Email
+                <a class="ln quiet" href="mailto:manpreets90000@gmail.com" data-magnet>Email
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                         <path d="M7 17L17 7M17 7H8M17 7v9" stroke-linecap="round" stroke-linejoin="round" />
                     </svg>
@@ -1553,90 +1797,417 @@
         </svg>
     </button>
 
+    <div class="cur" id="cur" aria-hidden="true"></div>
+    <div class="cur-dot" id="cur-dot" aria-hidden="true"></div>
+
+    <!-- ==========================================================
+         CHROME — always runs, no dependencies.
+         Nav state, scroll progress, active links, mobile menu.
+         ========================================================== -->
     <script>
         (function () {
             "use strict";
-            const $ = (s, c) => (c || document).querySelector(s);
-            const $$ = (s, c) => Array.from((c || document).querySelectorAll(s));
-            const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+            var $ = function (s, c) { return (c || document).querySelector(s); };
+            var $$ = function (s, c) { return Array.prototype.slice.call((c || document).querySelectorAll(s)); };
 
-            /* -------- preloader -------- */
-            (function () {
-                const box = $("#loader"), num = $("#load-num"), fill = $("#load-fill");
-                document.body.classList.add("lock");
-                const dur = reduced ? 150 : 1100, t0 = performance.now();
-                let done = false;
-                function end() {
-                    if (done) return;
-                    done = true;
-                    box.classList.add("done");
-                    document.body.classList.remove("lock");
-                    $$(".hero [data-reveal], .hero .mask").forEach(e => e.classList.add("in"));
-                    setTimeout(() => box.remove(), 800);
-                }
-                (function tick(now) {
-                    const k = Math.min(1, ((now || t0) - t0) / dur);
-                    const p = Math.round((1 - Math.pow(1 - k, 3)) * 100);
-                    num.textContent = p;
-                    fill.style.width = p + "%";
-                    if (k < 1) requestAnimationFrame(tick); else setTimeout(end, 180);
-                })(t0);
-                setTimeout(end, 4000); // safety net
-            })();
+            /* everything visible + loader gone — used if anime.js never arrives */
+            window.__revealAll = function () {
+                document.documentElement.classList.add("no-anime");
+                $$("[data-reveal], .mask, #mailto").forEach(function (e) { e.classList.add("in"); });
+                document.body.classList.remove("lock");
+                var l = $("#loader");
+                if (l) { l.classList.add("done"); setTimeout(function () { if (l.parentNode) l.remove(); }, 800); }
+            };
 
-            /* -------- rotating role line -------- */
-            (function () {
-                const out = $("#roles-out");
-                const lines = [
-                    "connecting NetSuite and Shopify in real time",
-                    "building ETL pipelines with Python + PySpark",
-                    "automating order-to-cash across ERP and CRM",
-                    "turning messy data into Power BI dashboards"
-                ];
-                if (reduced) { out.textContent = lines[0]; return; }
-                let i = 0, c = 0, back = false;
+            document.body.classList.add("lock");
+
+            /* safety net: if the module never boots (CDN blocked, old browser), show the site */
+            window.__animeSafety = setTimeout(function () {
+                if (!window.__animeReady) window.__revealAll();
+            }, 3200);
+
+            /* ---- scroll chrome ---- */
+            var nav = $("#nav"), bar = $("#progress"), topBtn = $("#top-btn");
+            var links = $$("#nav-links a");
+            var secs = links.map(function (a) { return $(a.getAttribute("href")); }).filter(Boolean);
+            var queued = false;
+
+            function onScroll() {
+                var y = window.scrollY;
+                var max = document.documentElement.scrollHeight - window.innerHeight;
+                var p = max > 0 ? y / max : 0;
+                nav.classList.toggle("stuck", y > 30);
+                bar.style.transform = "scaleX(" + p + ")";
+                topBtn.classList.toggle("show", y > 600);
+
+                var cur = null;
+                secs.forEach(function (s) {
+                    if (s.getBoundingClientRect().top <= window.innerHeight * .38) cur = s.id;
+                });
+                links.forEach(function (a) { a.classList.toggle("on", a.getAttribute("href") === "#" + cur); });
+
+                if (window.__onScrollExtra) window.__onScrollExtra();
+                queued = false;
+            }
+            window.addEventListener("scroll", function () {
+                if (!queued) { queued = true; requestAnimationFrame(onScroll); }
+            }, { passive: true });
+            window.addEventListener("resize", onScroll, { passive: true });
+            window.__syncScroll = onScroll;
+            onScroll();
+
+            /* ---- mobile menu ---- */
+            var burger = $("#burger"), sheet = $("#sheet"), items = $$("a", sheet);
+            items.forEach(function (a, i) { a.style.transitionDelay = (90 + i * 55) + "ms"; });
+            var close = function () { document.body.classList.remove("menu", "lock"); };
+            burger.addEventListener("click", function () {
+                var open = document.body.classList.toggle("menu");
+                document.body.classList.toggle("lock", open);
+                burger.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+            });
+            items.forEach(function (a) { a.addEventListener("click", close); });
+            window.addEventListener("keydown", function (e) { if (e.key === "Escape") close(); });
+
+            /* ---- misc ---- */
+            topBtn.addEventListener("click", function () { window.scrollTo({ top: 0, behavior: "smooth" }); });
+            $("#year").textContent = new Date().getFullYear();
+
+            /* ---- rotating role line (plain, anime-independent) ---- */
+            var out = $("#roles-out");
+            var lines = [
+                "connecting NetSuite and Shopify in real time",
+                "building ETL pipelines with Python + PySpark",
+                "automating order-to-cash across ERP and CRM",
+                "turning messy data into Power BI dashboards"
+            ];
+            if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+                out.textContent = lines[0];
+            } else {
+                var i = 0, c = 0, back = false;
                 (function step() {
-                    const full = lines[i];
+                    var full = lines[i];
                     c += back ? -1 : 1;
                     out.textContent = full.slice(0, c);
-                    let wait = back ? 24 : 48;
+                    var wait = back ? 24 : 48;
                     if (!back && c === full.length) { wait = 2000; back = true; }
                     else if (back && c === 0) { back = false; i = (i + 1) % lines.length; wait = 280; }
                     setTimeout(step, wait);
                 })();
+            }
+        })();
+    </script>
+
+    <!-- ==========================================================
+         MOTION — anime.js v4 (https://animejs.com/)
+         Every transition below is driven by anime: timelines,
+         staggers, scroll-scrubbed seeks and spring-ish easings.
+         ========================================================== -->
+    <script type="module">
+        const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+        if (REDUCED) { window.__animeReady = true; clearTimeout(window.__animeSafety); window.__revealAll(); }
+
+        async function loadAnime() {
+            const cdns = [
+                "https://cdn.jsdelivr.net/npm/animejs@4.5.0/+esm",
+                "https://esm.sh/animejs@4.5.0",
+                "https://cdn.jsdelivr.net/npm/animejs@4.0.2/+esm",
+                "https://unpkg.com/animejs@4.0.2/lib/anime.esm.js"
+            ];
+            for (const url of cdns) {
+                try { return await import(/* @vite-ignore */ url); } catch (e) { /* try next */ }
+            }
+            return null;
+        }
+
+        if (!REDUCED) {
+            const A = await loadAnime();
+            if (!A || typeof A.animate !== "function") {
+                window.__revealAll();
+            } else {
+                boot(A);
+            }
+        }
+
+        function boot(A) {
+            const { animate, stagger, utils } = A;
+
+            window.__animeReady = true;
+            clearTimeout(window.__animeSafety);
+            document.documentElement.classList.add("js-anime");
+
+            const $ = (s, c) => (c || document).querySelector(s);
+            const $$ = (s, c) => Array.from((c || document).querySelectorAll(s));
+            const delayOf = el => parseFloat((el.style.getPropertyValue("--d") || "0").replace("ms", "")) || 0;
+            /* one animation refusing to build must never take the rest down with it */
+            const safe = fn => { try { return fn(); } catch (e) { return null; } };
+
+            /* ==================================================
+               LERP RIG — pointer-driven motion (magnets, tilt,
+               cursor) is written once per frame with utils.set
+               instead of spawning an animation per pointermove
+               ================================================== */
+            const rigs = [];
+            function rig(el, apply, k) {
+                const s = { a: 0, b: 0, c: 0, ta: 0, tb: 0, tc: 0, k: k || .15 };
+                rigs.push({ el, s, apply });
+                return s;
+            }
+            (function frame() {
+                for (const r of rigs) {
+                    const s = r.s;
+                    const d = Math.abs(s.ta - s.a) + Math.abs(s.tb - s.b) + Math.abs(s.tc - s.c);
+                    if (d < .01) { if (!s.rest) { s.a = s.ta; s.b = s.tb; s.c = s.tc; r.apply(r.el, s); s.rest = 1; } continue; }
+                    s.rest = 0;
+                    s.a += (s.ta - s.a) * s.k;
+                    s.b += (s.tb - s.b) * s.k;
+                    s.c += (s.tc - s.c) * s.k;
+                    r.apply(r.el, s);
+                }
+                requestAnimationFrame(frame);
             })();
 
-            /* -------- orbiting logo: swaps every 2s -------- */
-            (function () {
-                const img = $("#orbit-logo");
-                if (!img) return;
-                const logos = [
-                    "netsuite.png", "boomi.png", "celigo.png", "salesforce.png", "aws.png",
+            /* ==================================================
+               TEXT SPLITTING — words kept intact, chars animated
+               ================================================== */
+            function split(root) {
+                const chars = [];
+                (function walk(node) {
+                    Array.from(node.childNodes).forEach(n => {
+                        if (n.nodeType === 3) {
+                            const frag = document.createDocumentFragment();
+                            const parts = n.textContent.split(/(\s+)/);
+                            parts.forEach(part => {
+                                if (!part) return;
+                                if (/^\s+$/.test(part)) { frag.appendChild(document.createTextNode(" ")); return; }
+                                const wd = document.createElement("span");
+                                wd.className = "wd";
+                                Array.from(part).forEach(ch => {
+                                    const s = document.createElement("span");
+                                    s.className = "ch";
+                                    s.textContent = ch;
+                                    wd.appendChild(s);
+                                    chars.push(s);
+                                });
+                                frag.appendChild(wd);
+                            });
+                            n.replaceWith(frag);
+                        } else if (n.nodeType === 1) {
+                            walk(n);
+                        }
+                    });
+                })(root);
+                return chars;
+            }
+
+            /* ==================================================
+               PRELOADER  →  HERO  (one anime timeline)
+               ================================================== */
+            const loader = $("#loader");
+            const heroChars = $$(".hero h1 .mask > span").map(sp => split(sp));
+            safe(() => utils.set(heroChars.flat(), { opacity: 0, y: "108%" }));
+            safe(() => utils.set("#avatar", { opacity: 0, scale: .86 }));
+
+            const loadName = split($("#load-name"));
+            safe(() => utils.set(loadName, { opacity: 0, y: 22 }));
+
+            const counter = { v: 0 };
+            const numEl = $("#load-num"), fillEl = $("#load-fill");
+            let heroPlayed = false;
+
+            function heroIn() {
+                if (heroPlayed) return;
+                heroPlayed = true;
+
+                /* headline: three masked lines, each a char cascade offset from the last */
+                heroChars.forEach((line, li) => safe(() => animate(line, {
+                    y: ["108%", "0%"], opacity: [0, 1],
+                    duration: 1000, ease: "outExpo",
+                    delay: stagger(16, { start: 60 + li * 110 })
+                })));
+
+                safe(() => animate($$(".hero [data-reveal]"), {
+                    opacity: [0, 1], y: [26, 0], duration: 900, ease: "outExpo",
+                    delay: el => 300 + delayOf(el) * .5
+                }));
+
+                safe(() => animate("#avatar", {
+                    scale: [.86, 1], opacity: [0, 1], duration: 1200,
+                    ease: "outElastic(1, .8)", delay: 220
+                }));
+
+                safe(() => animate("#ring-arc", {
+                    strokeDashoffset: [308, 0], opacity: [0, 1],
+                    duration: 1500, ease: "outQuart", delay: 380
+                }));
+
+                startAmbient();
+            }
+
+            function outro() {
+                safe(() => animate("#loader > div", { opacity: [1, 0], y: [0, -26], duration: 520, ease: "inQuad" }));
+                const slide = safe(() => animate(loader, {
+                    y: ["0%", "-101%"], duration: 1000, ease: "inOutQuart", delay: 320,
+                    onComplete: () => { loader.remove(); document.body.classList.remove("lock"); }
+                }));
+                if (!slide) { loader.remove(); document.body.classList.remove("lock"); }
+                setTimeout(heroIn, 680);
+            }
+
+            safe(() => animate(loadName, {
+                opacity: [0, 1], y: [22, 0], duration: 700, ease: "outExpo", delay: stagger(28)
+            }));
+
+            const count = safe(() => animate(counter, {
+                v: 100, duration: 1500, ease: "inOutQuart", delay: 260,
+                onUpdate: () => {
+                    const p = Math.round(counter.v);
+                    numEl.textContent = p;
+                    fillEl.style.width = p + "%";
+                },
+                onComplete: outro
+            }));
+            if (!count) setTimeout(outro, 400);
+
+            /* hard safety: if anything above stalls, still open the site */
+            setTimeout(() => {
+                if (document.getElementById("loader")) loader.remove();
+                document.body.classList.remove("lock");
+                heroIn();
+            }, 5200);
+
+            /* ==================================================
+               AMBIENT LOOPS — aurora, grain, orbit, pulse, caret
+               ================================================== */
+            let ambientStarted = false;
+            function startAmbient() {
+                if (ambientStarted) return;
+                ambientStarted = true;
+
+                safe(() => animate(".aurora .a1", { x: [0, 120, -40, 0], y: [0, 70, -30, 0], scale: [1, 1.18, .95, 1], duration: 24000, ease: "inOutSine", loop: true }));
+                safe(() => animate(".aurora .a2", { x: [0, -110, 50, 0], y: [0, 90, -40, 0], scale: [1, 1.12, 1.02, 1], duration: 29000, ease: "inOutSine", loop: true }));
+                safe(() => animate(".aurora .a3", { x: [0, 90, -80, 0], y: [0, -60, 40, 0], scale: [1, .92, 1.14, 1], duration: 34000, ease: "inOutSine", loop: true }));
+
+                /* film-grain jitter */
+                safe(() => animate(".grain", { x: [0, -14, 9, -6, 0], y: [0, 10, -12, 6, 0], duration: 1400, ease: "linear", loop: true }));
+
+                /* the orbiting badge, and its counter-rotation so it stays upright */
+                safe(() => animate("#orbit", { rotate: 360, duration: 18000, ease: "linear", loop: true }));
+                safe(() => animate("#orbit-logo", { rotate: -360, duration: 18000, ease: "linear", loop: true }));
+                safe(() => animate("#ring-arc", { rotate: 360, duration: 12000, ease: "linear", loop: true, delay: 1400 }));
+
+                safe(() => animate("#pulse", { scale: [1, 1.6, 1], opacity: [1, .3, 1], duration: 1900, ease: "inOutQuad", loop: true }));
+                safe(() => animate("#brand-dot", { scale: [1, 1.45, 1], duration: 2400, ease: "inOutQuad", loop: true }));
+                safe(() => animate("#caret", { opacity: [1, 0], duration: 520, ease: "linear", loop: true, alternate: true }));
+                safe(() => animate("#cue-sweep", { x: ["-100%", "0%", "100%"], duration: 2400, ease: "inOutQuad", loop: true }));
+
+                /* marquee — the track is duplicated, so -50% is a seamless wrap */
+                const marq = $("#marq");
+                if (marq && !marq.dataset.doubled) {
+                    marq.innerHTML += marq.innerHTML;
+                    marq.dataset.doubled = "1";
+                    safe(() => animate(marq, { x: ["0%", "-50%"], duration: 32000, ease: "linear", loop: true }));
+                }
+
+                /* orbiting logo swap */
+                const logo = $("#orbit-logo");
+                const logos = ["netsuite.png", "boomi.png", "celigo.png", "salesforce.png", "aws.png",
                     "python.png", "shopify.png", "powerbi.png", "docker.png", "hubspot.png",
-                    "postgresql.png", "make.png", "zoho.png", "mysql.png", "github.png"
-                ];
-                logos.forEach(src => { const p = new Image(); p.src = src; }); // warm the cache
-                let i = 0;
+                    "postgresql.png", "make.png", "zoho.png", "mysql.png", "github.png"];
+                logos.forEach(src => { const p = new Image(); p.src = src; });
+                let li = 0;
                 setInterval(() => {
-                    img.style.opacity = "0";
+                    if (document.hidden) return;
+                    logo.style.opacity = "0";
                     setTimeout(() => {
-                        i = (i + 1) % logos.length;
-                        img.src = logos[i];
-                        img.style.opacity = "1";
-                    }, 300);
-                }, 2000);
-            })();
+                        li = (li + 1) % logos.length;
+                        logo.src = logos[li];
+                        logo.style.opacity = "1";
+                    }, 280);
+                }, 2400);
+                logo.style.transition = "opacity .28s linear";
+            }
 
-            /* -------- reveal on scroll -------- */
-            const io = new IntersectionObserver(es => {
-                es.forEach(e => {
-                    if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); }
+            /* ==================================================
+               SCROLL REVEALS — IntersectionObserver triggers,
+               anime.js does the moving
+               ================================================== */
+            const io = new IntersectionObserver(entries => {
+                entries.forEach(e => {
+                    if (!e.isIntersecting) return;
+                    io.unobserve(e.target);
+                    reveal(e.target);
                 });
-            }, { threshold: .15, rootMargin: "0px 0px -6% 0px" });
-            $$("[data-reveal], .mask, #mailto").forEach(el => { if (!el.closest(".hero")) io.observe(el); });
+            }, { threshold: .12, rootMargin: "0px 0px -8% 0px" });
 
-            /* -------- statement word scrub -------- */
-            const statements = $$("[data-statement]").map(el => {
+            function reveal(el) {
+                /* section headline — char cascade out of its mask */
+                if (el.classList.contains("mask")) {
+                    const inner = el.firstElementChild;
+                    const chars = inner._chars || (inner._chars = split(inner));
+                    animate(chars, {
+                        y: ["108%", "0%"], opacity: [0, 1],
+                        duration: 950, ease: "outExpo", delay: stagger(14)
+                    });
+                    return;
+                }
+
+                /* stagger group — logos, rows, cards, figures */
+                const sel = el.dataset.group;
+                if (sel) {
+                    const kids = $$(sel, el);
+                    animate(kids, {
+                        opacity: [0, 1], y: [30, 0], scale: [.97, 1],
+                        duration: 900, ease: "outExpo", delay: stagger(70),
+                        onComplete: () => kids.forEach(k => { k.style.transform = ""; })
+                    });
+                    return;
+                }
+
+                /* the big email — letters swing in from the centre */
+                if (el.id === "mailto") {
+                    const chars = split(el);
+                    animate(chars, {
+                        opacity: [0, 1], y: [34, 0], rotate: [8, 0],
+                        duration: 1000, ease: "outExpo",
+                        delay: stagger(18, { from: "center" }),
+                        onComplete: () => el.classList.add("in")
+                    });
+                    return;
+                }
+
+                /* everything else */
+                animate(el, {
+                    opacity: [0, 1], y: [26, 0],
+                    duration: 900, ease: "outExpo", delay: delayOf(el)
+                });
+            }
+
+            $$("[data-reveal], .mask, [data-group], #mailto").forEach(el => {
+                if (el.closest(".hero")) return;
+                io.observe(el);
+            });
+
+            /* ==================================================
+               COUNTERS
+               ================================================== */
+            const cio = new IntersectionObserver(entries => {
+                entries.forEach(e => {
+                    if (!e.isIntersecting) return;
+                    cio.unobserve(e.target);
+                    const el = e.target, obj = { v: 0 };
+                    animate(obj, {
+                        v: +el.dataset.count, duration: 1700, ease: "outQuart",
+                        onUpdate: () => { el.textContent = Math.round(obj.v); }
+                    });
+                });
+            }, { threshold: .5 });
+            $$("[data-count]").forEach(el => cio.observe(el));
+
+            /* ==================================================
+               SCROLL-SCRUBBED WORD SCRUB — an anime animation
+               seeked by scroll position instead of by time
+               ================================================== */
+            const scrubs = $$("[data-statement]").map(el => {
                 const words = el.textContent.trim().split(/\s+/);
                 el.textContent = "";
                 words.forEach((w, i) => {
@@ -1646,73 +2217,110 @@
                     el.appendChild(s);
                     if (i < words.length - 1) el.appendChild(document.createTextNode(" "));
                 });
-                return { el, words: $$(".w", el) };
+                const spans = $$(".w", el);
+                const anim = safe(() => animate(spans, {
+                    color: ["rgba(237,237,240,0.17)", "rgba(237,237,240,1)"],
+                    duration: 160, ease: "linear",
+                    delay: stagger(90), autoplay: false
+                }));
+                const total = (anim && anim.duration) || (spans.length * 90 + 160);
+                return { el, anim, spans, total };
             });
 
-            /* -------- counters -------- */
-            const cio = new IntersectionObserver(es => {
-                es.forEach(e => {
-                    if (!e.isIntersecting) return;
-                    const el = e.target, to = +el.dataset.count, t0 = performance.now();
-                    (function run(now) {
-                        const k = Math.min(1, ((now || t0) - t0) / 1300);
-                        el.textContent = Math.round(to * (1 - Math.pow(1 - k, 3)));
-                        if (k < 1) requestAnimationFrame(run);
-                    })(t0);
-                    cio.unobserve(el);
-                });
-            }, { threshold: .6 });
-            $$("[data-count]").forEach(el => cio.observe(el));
-
-            /* -------- scroll-driven bits -------- */
-            const nav = $("#nav"), bar = $("#progress"), topBtn = $("#top-btn");
-            const links = $$("#nav-links a");
-            const secs = links.map(a => $(a.getAttribute("href"))).filter(Boolean);
-            let queued = false;
-
-            function onScroll() {
-                const y = scrollY;
-                const max = document.documentElement.scrollHeight - innerHeight;
-                nav.classList.toggle("stuck", y > 30);
-                bar.style.transform = "scaleX(" + (max > 0 ? y / max : 0) + ")";
-                topBtn.classList.toggle("show", y > 600);
-
-                let cur = null;
-                secs.forEach(s => { if (s.getBoundingClientRect().top <= innerHeight * .38) cur = s.id; });
-                links.forEach(a => a.classList.toggle("on", a.getAttribute("href") === "#" + cur));
-
-                statements.forEach(({ el, words }) => {
+            window.__onScrollExtra = () => {
+                scrubs.forEach(({ el, anim, spans, total }) => {
                     const r = el.getBoundingClientRect();
-                    const p = (innerHeight * .82 - r.top) / (innerHeight * .5 + r.height * .4);
-                    const lit = Math.round(Math.max(0, Math.min(1, p)) * words.length);
-                    words.forEach((w, i) => w.classList.toggle("lit", i < lit));
+                    const p = Math.max(0, Math.min(1, (innerHeight * .82 - r.top) / (innerHeight * .5 + r.height * .4)));
+                    if (anim && typeof anim.seek === "function") anim.seek(total * p);
+                    else {
+                        const lit = Math.round(p * spans.length);
+                        spans.forEach((w, i) => w.classList.toggle("lit", i < lit));
+                    }
                 });
-                queued = false;
+            };
+            if (window.__syncScroll) window.__syncScroll();
+
+            /* ==================================================
+               MAGNETIC LINKS + BUTTONS
+               ================================================== */
+            if (matchMedia("(hover: hover) and (pointer: fine)").matches) {
+
+                /* ---------- magnetic links ---------- */
+                $$("[data-magnet]").forEach(el => {
+                    const s = rig(el, (t, v) => utils.set(t, { x: v.a, y: v.b }), .18);
+                    el.addEventListener("pointermove", e => {
+                        const r = el.getBoundingClientRect();
+                        s.ta = (e.clientX - (r.left + r.width / 2)) * .34;
+                        s.tb = (e.clientY - (r.top + r.height / 2)) * .45;
+                    });
+                    el.addEventListener("pointerleave", () => { s.ta = 0; s.tb = 0; });
+                });
+
+                /* ---------- service rows ---------- */
+                $$(".row").forEach(row => {
+                    const fill = $(".fill", row), go = $(".go", row), h = $("h3", row);
+                    row.addEventListener("pointerenter", () => {
+                        safe(() => animate(fill, { opacity: [0, 1], scaleX: [.35, 1], duration: 620, ease: "outExpo" }));
+                        safe(() => animate(go, { x: 5, y: -5, opacity: .85, duration: 520, ease: "outExpo" }));
+                        safe(() => animate(h, { x: 9, duration: 620, ease: "outExpo" }));
+                    });
+                    row.addEventListener("pointerleave", () => {
+                        safe(() => animate(fill, { opacity: 0, duration: 420, ease: "outQuad" }));
+                        safe(() => animate(go, { x: 0, y: 0, opacity: .22, duration: 520, ease: "outExpo" }));
+                        safe(() => animate(h, { x: 0, duration: 760, ease: "outElastic(1, .6)" }));
+                    });
+                });
+
+                /* ---------- testimonial cards: tilt + shine ---------- */
+                $$(".card").forEach(card => {
+                    const shine = $(".shine", card);
+                    const s = rig(card, (t, v) => utils.set(t, {
+                        rotateY: v.a, rotateX: v.b, y: v.c
+                    }), .14);
+                    card.addEventListener("pointermove", e => {
+                        const r = card.getBoundingClientRect();
+                        const px = (e.clientX - r.left) / r.width, py = (e.clientY - r.top) / r.height;
+                        shine.style.setProperty("--mx", (px * 100) + "%");
+                        shine.style.setProperty("--my", (py * 100) + "%");
+                        s.ta = (px - .5) * 10;
+                        s.tb = (.5 - py) * 10;
+                        s.tc = -8;
+                    });
+                    card.addEventListener("pointerenter", () => safe(() => animate(shine, { opacity: 1, duration: 420 })));
+                    card.addEventListener("pointerleave", () => {
+                        safe(() => animate(shine, { opacity: 0, duration: 520 }));
+                        s.ta = 0; s.tb = 0; s.tc = 0;
+                    });
+                });
+
+                /* ---------- stack logos ---------- */
+                $$(".logo").forEach(l => {
+                    const img = $("img", l);
+                    l.addEventListener("pointerenter", () =>
+                        safe(() => animate(img, { scale: 1.14, rotate: [0, -8, 6, 0], duration: 750, ease: "outBack" })));
+                    l.addEventListener("pointerleave", () =>
+                        safe(() => animate(img, { scale: 1, rotate: 0, duration: 600, ease: "outQuad" })));
+                });
+
+                /* ---------- cursor: dot leads, ring lags behind ---------- */
+                const cur = $("#cur"), dot = $("#cur-dot");
+                const ring = rig(cur, (t, v) => utils.set(t, { x: v.a, y: v.b }), .16);
+                ring.a = ring.ta = innerWidth / 2;
+                ring.b = ring.tb = innerHeight / 2;
+                addEventListener("pointermove", e => {
+                    ring.ta = e.clientX; ring.tb = e.clientY;
+                    utils.set(dot, { x: e.clientX, y: e.clientY });
+                    if (!cur.classList.contains("on")) {
+                        cur.classList.add("on");
+                        dot.classList.add("on");
+                    }
+                }, { passive: true });
+                $$("a, button, .logo, .card, .row").forEach(el => {
+                    el.addEventListener("pointerenter", () => cur.classList.add("big"));
+                    el.addEventListener("pointerleave", () => cur.classList.remove("big"));
+                });
             }
-            addEventListener("scroll", () => {
-                if (!queued) { queued = true; requestAnimationFrame(onScroll); }
-            }, { passive: true });
-            addEventListener("resize", onScroll, { passive: true });
-            onScroll();
-
-            /* -------- mobile menu -------- */
-            (function () {
-                const burger = $("#burger"), sheet = $("#sheet"), items = $$("a", sheet);
-                items.forEach((a, i) => a.style.transitionDelay = (90 + i * 55) + "ms");
-                const close = () => document.body.classList.remove("menu", "lock");
-                burger.addEventListener("click", () => {
-                    const open = document.body.classList.toggle("menu");
-                    document.body.classList.toggle("lock", open);
-                    burger.setAttribute("aria-label", open ? "Close menu" : "Open menu");
-                });
-                items.forEach(a => a.addEventListener("click", close));
-                addEventListener("keydown", e => { if (e.key === "Escape") close(); });
-            })();
-
-            /* -------- misc -------- */
-            topBtn.addEventListener("click", () => scrollTo({ top: 0, behavior: "smooth" }));
-            $("#year").textContent = new Date().getFullYear();
-        })();
+        }
     </script>
 </body>
 
